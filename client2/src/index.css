@@ -10,3 +10,30 @@
             @apply cursor-pointer;
         }
     }
+
+/* Modal animations and glow */
+@keyframes modalIn {
+  0% { opacity: 0; transform: translateY(-8px) scale(.98); filter: blur(2px); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+.animate-modal-in {
+  animation: modalIn 240ms cubic-bezier(.2,.8,.2,1) both;
+}
+.glow-ring {
+  box-shadow: 0 10px 30px rgba(99,102,241,0.16), 0 2px 8px rgba(99,102,241,0.08);
+  border: 1px solid rgba(99,102,241,0.08);
+  backdrop-filter: blur(6px);
+}
+.btn-glow {
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.btn-glow:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 12px 40px rgba(99,102,241,0.22), 0 4px 12px rgba(99,102,241,0.06);
+}
+
+/* Utilities used in modal */
+.blur-3xl {
+  filter: blur(48px);
+}
+

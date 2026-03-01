@@ -21,31 +21,31 @@ const ModernTemplate = ({ data, accentColor }) => {
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm ">
 					{data.personal_info?.email && (
 						<div className="flex items-center gap-2">
-							<Mail className="size-4" />
+							<Mail className="w-4 h-4" />
 							<span>{data.personal_info.email}</span>
 						</div>
 					)}
 					{data.personal_info?.phone && (
 						<div className="flex items-center gap-2">
-							<Phone className="size-4" />
+							<Phone className="w-4 h-4" />
 							<span>{data.personal_info.phone}</span>
 						</div>
 					)}
 					{data.personal_info?.location && (
 						<div className="flex items-center gap-2">
-							<MapPin className="size-4" />
+							<MapPin className="w-4 h-4" />
 							<span>{data.personal_info.location}</span>
 						</div>
 					)}
 					{data.personal_info?.linkedin && (
 						<a target="_blank" href={data.personal_info?.linkedin} className="flex items-center gap-2">
-							<Linkedin className="size-4" />
+							<Linkedin className="w-4 h-4" />
 							<span className="break-all text-xs">{data.personal_info.linkedin.split("https://www.")[1] ? data.personal_info.linkedin.split("https://www.")[1] : data.personal_info.linkedin}</span>
 						</a>
 					)}
 					{data.personal_info?.website && (
 						<a target="_blank" href={data.personal_info?.website} className="flex items-center gap-2">
-							<Globe className="size-4" />
+							<Globe className="w-4 h-4" />
 							<span className="break-all text-xs">{data.personal_info.website.split("https://")[1] ? data.personal_info.website.split("https://")[1] : data.personal_info.website}</span>
 						</a>
 					)}

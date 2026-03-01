@@ -1,9 +1,13 @@
 import React from 'react';
+import { Outlet } from 'react-router-dom';
+import Navbar from '../components/Navbar';
 
 const Layout = () => {
     return (
-        <div>
-            <h1>Layout Pages</h1>
+        <div className='min-h-screen bg-black'>
+            <Navbar />
+            
+                <Outlet />
         </div>
     );
 };
