@@ -37,3 +37,20 @@
   filter: blur(48px);
 }
 
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.outer-ring {
+  position: relative;
+}
+.outer-ring::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 9999px;
+  background: conic-gradient(from 0deg, #06b6d4, #8b5cf6, #9333ea, #06b6d4);
+  animation: spin 4s linear infinite;
+  opacity: 0.6;
+  z-index: -1;
+}
+
