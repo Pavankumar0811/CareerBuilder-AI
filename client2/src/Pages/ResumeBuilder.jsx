@@ -2,31 +2,37 @@ import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { dummyResumeData } from '../assets/assets';
 import { ArrowLeftIcon, Briefcase, ChevronLeft, ChevronRight, FileText, FolderIcon, GraduationCap, Sparkles, User } from 'lucide-react';
+import ColorPicker from '../components/ColorPicker';
+import ExperienceForm from '../components/ExperienceForm';
 import PersonalInfoForm from '../components/PersonalInfoForm';
+import ResumePreview from '../components/ResumePreview';
+import TemplateSelector from '../components/TemplateSelector';
+import Preview from './Preview';
+import ProfessionalSummaryForm from '../components/ProfessionalSummaryForm';
+
+const createResumeState = (resumeId) => {
+	const existingResume = dummyResumeData.find((item) => item._id === resumeId);
+
+	return (
+		existingResume ?? {
+			_id: '',
+			title: '',
+			personal_info: {},
+			professional_summary: '',
+			experience: [],
+			education: [],
+			skills: [],
+			project: [],
+			template: 'Classic',
+			accent_color: '#000000',
+			public: false,
+		}
+	);
+};
 
 const ResumeBuilder = () => {
 	const { resumeId } = useParams();
-	const [resumeData, setResumeData] = useState({
-		_id: '',
-		title: '',
-		personal_info: {},
-		professional_summary: '',
-		experience: [],
-		education: [],
-		skills: [],
-		project: [],
-		template: 'Classic',
-		accent_color: '#000000',
-		public: false,
-	});
-
-	const loadExistingResume = () => {
-		const resume = dummyResumeData.find((item) => item._id === resumeId);
-		if (resume) {
-			setResumeData(resume);
-			document.title = resume.title;
-		}
-	};
+	const [resumeData, setResumeData] = useState(() => createResumeState(resumeId));
 
 	const [activeSectionIndex, setActiveSectionIndex] = useState(0);
 	const [removeBackground, setRemoveBackground] = useState(false);
@@ -43,7 +49,8 @@ const ResumeBuilder = () => {
 	const activeSection = section[activeSectionIndex];
 
 	useEffect(() => {
-		loadExistingResume();
+		const resume = dummyResumeData.find((item) => item._id === resumeId);
+		document.title = resume?.title ?? 'Resume Builder';
 	}, [resumeId]);
 
 	return (
@@ -54,11 +61,11 @@ const ResumeBuilder = () => {
 				</Link>
 			</div>
 			<div className='max-w-7xl mx-auto px-4 pb-8'>
-				<div className='grid lg:grid-cols-12 gap-8'>
+				<div className='grid grid-cols-1 lg:grid-cols-12 gap-8'>
 					{/* left panel - form */}
 					<div className='relative lg:col-span-5 rounded-lg overflow-hidden'>
 						<div className='bg-white rounded-lg shadow-sm border border-gray-200 p-6 pt-1'>
-					{/* progress bar using activeSectionIndex */}
+			{/* progress bar using activeSectionIndex */}
 							<hr className='absolute top-0 left-0 right-0 border-2 border-gray-200' />
 							<hr
 								className='absolute top-0 left-0 h-1 bg-gradient-to-r from-green-500 to-green-600 border-none transition-all duration-500'
@@ -66,11 +73,18 @@ const ResumeBuilder = () => {
 							/>
 
 							{/* section navigation */}
-							<div className='flex justify-between items-center mb-6 border-b border-gray-300 py-3'>
+							<div className='flex items-center gap-2'>
 								<div className='flex items-center gap-2 text-sm text-gray-700 font-medium'>
 									<activeSection.icon className='size-4' />
 									{activeSection.name}
+                                  
 								</div>
+								<div className='flex justify-between items-center mb-6 border-b border-gray-300 py-1'>
+									<TemplateSelector selectedTemplate={resumeData.template} onChange={(template)=> setResumeData(prev =>({...prev, template}))} />
+									<ColorPicker selectedColor={resumeData.accent_color} onChange={(Color) => setResumeData(prev => ({...prev, accent_color: Color}))} />
+								</div>
+
+
 								<div className='flex items-center'>
 						{activeSectionIndex !== 0 && (
 							<button onClick={() => setActiveSectionIndex((prevIndex) => Math.max(prevIndex - 1, 0))} className='flex items-center gap-1 p-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition-all' disabled={activeSectionIndex === 0}>
@@ -97,6 +111,16 @@ const ResumeBuilder = () => {
 										setRemoveBackground={setRemoveBackground}
 									/>
 								)}
+                                
+								{activeSection.id === 'summary' && ( 	
+                                 <ProfessionalSummaryForm data={resumeData.professional_summary} onChange={(data) => setResumeData((prev) => ({ ...prev, professional_summary: data }))} setResumeData={setResumeData}/>
+	                            )}
+
+								{activeSection.id === 'experience' && (	
+                                 <ExperienceForm data={resumeData.experience} onChange={(data) => setResumeData((prev) => ({ ...prev, experience: data }))}/>
+	                            )}
+                                
+
 								{activeSection.id !== 'personal' && (
 									<p className='text-sm text-gray-500'>Section editor for {activeSection.name} will appear here.</p>
 								)}
@@ -104,9 +128,18 @@ const ResumeBuilder = () => {
 						</div>
 					</div>
 				{/*right side - resume form */}
-					<div className='lg:col-span-7 rounded-lg border border-gray-200 bg-white p-6'>
-						<h2 className='text-lg font-semibold text-gray-800'>Resume Preview</h2>
-						<p className='mt-2 text-sm text-gray-500'>Preview pane will be rendered here.</p>
+					<div className='lg:col-span-7 max-lg:mt-6'>
+						<div className='lg:sticky lg:top-6'>
+							<div className='rounded-lg border border-gray-200 bg-white shadow-sm p-3 sm:p-4'>
+								<p className='text-sm font-medium text-gray-700 mb-3'>Live Resume Preview</p>
+								<ResumePreview
+									data={resumeData}
+									template={resumeData.template}
+									accentColor={resumeData.accent_color}
+									classes='rounded-md overflow-hidden'
+								/>
+							</div>
+						</div>
 					</div>
 				</div>
 

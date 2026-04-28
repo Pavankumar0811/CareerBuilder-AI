@@ -1,12 +1,12 @@
 import { FilePenLineIcon, PencilIcon, PlusIcon, TrashIcon, UploadCloudIcon, XIcon, UploadCloud } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { dummyResumeData } from '../assets/assets';
 import { useNavigate } from 'react-router-dom';
 const Dashboard = () => {
 
     const colors = ["#4F46E5", "#DB2777", "#16A34A", "#D97706", "#2563EB", "#9333EA", "#DC2626", "#059669"];
 
-   const[allResumes, setAllResumes] = useState([]);
+  const[allResumes, setAllResumes] = useState(() => dummyResumeData);
    const[showCreateResume, setShowCreateResume] = useState(false);
    const[showUploadResume, setShowUploadResume] = useState(false);
    const[title, setTitle] = useState('');
@@ -15,12 +15,6 @@ const Dashboard = () => {
   const[deleteResumeId, setDeleteResumeId] = useState('');
 
    const navigate = useNavigate();
-    
-   
-
-   const loadResumes = async () => {
-    setAllResumes(dummyResumeData)
-   }
 
     const createResume = async (event) => {
         event.preventDefault();
@@ -51,10 +45,6 @@ const Dashboard = () => {
       setAllResumes((prevResumes) => prevResumes.filter((resumeItem) => resumeItem._id !== deleteResumeId));
       setDeleteResumeId('');
     }
-
-   useEffect(()=>{
-    loadResumes();
-   },[])
 
     return (
         <div>
