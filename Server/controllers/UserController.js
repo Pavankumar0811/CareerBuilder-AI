@@ -85,6 +85,32 @@ export const loginUser = async (req, res) => {
       }
     }
 
+// controller for resetting password after captcha verification
+// post: /api/users/reset-password
+export const resetPassword = async (req, res) => {
+      try {
+        const { email, password } = req.body;
+
+        if (!email || !password) {
+          return res.status(400).json({ message: "Missing required fields" });
+        }
+
+        const user = await User.findOne({ email });
+        if (!user) {
+          return res.status(404).json({ message: "User not found" });
+        }
+
+        user.password = await bcrypt.hash(password, 10);
+        await user.save();
+
+        return res.status(200).json({
+          message: "Password reset successfully",
+        });
+      } catch (error) {
+        return res.status(400).json({ message: error.message });
+      }
+    }
+
     // controller for getting user by id
     // Get: /api/users/data
 
@@ -116,7 +142,7 @@ export const loginUser = async (req, res) => {
         const userId = req.userId;
 
         //retrieve user resumes
-        const resumes = await Resume.find({user: userId})
+            const resumes = await Resume.find({userId})
         return res.status(200).json({resumes})
       }
          catch (error) {

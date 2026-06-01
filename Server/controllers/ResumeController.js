@@ -10,7 +10,7 @@ import fs from 'fs';
 export const createResume = async (req, res) => {
     try {
         const userId = req.userId;
-        const {title, content} = req.body;
+        const {title} = req.body;
 
         // create new resume
         const newResume = await Resume.create({userId, title})
@@ -28,9 +28,9 @@ export const createResume = async (req, res) => {
 export const deleteResume = async (req, res) => {
     try {
         const userId = req.userId;
-        const {resumeid} = req.params;
+        const {resumeId} = req.params;
 
-       await Resume.findOneAndDelete({userId, _id: resumeid})
+       await Resume.findOneAndDelete({userId, _id: resumeId})
 
        // return success message
         return res.status(200).json({message: "Resume deleted successfully"})
@@ -46,7 +46,7 @@ export const deleteResume = async (req, res) => {
 export const getResumeById = async (req, res) => {
     try {
         const userId = req.userId;
-        const {resumeid} = req.params;
+        const {resumeId} = req.params;
 
        const resume = await Resume.findOne({userId, _id: resumeId})
 
@@ -68,7 +68,7 @@ export const getResumeById = async (req, res) => {
 // Get: /api/resumes/public
 export const getResumeByIdPublic = async (req, res) => {
     try {
-        const {resumeid} = req.params;
+        const {resumeId} = req.params;
 
        const resume = await Resume.findOne({public: true, _id: resumeId})
 
@@ -88,10 +88,10 @@ export const getResumeByIdPublic = async (req, res) => {
 export const updateResume = async (req, res) => {
     try {
         const userId = req.userId;
-        const {resumeid, resumeData, removeBackground} = req.body;
+        const {resumeId, resumeData, removeBackground} = req.body;
         const image = req.file;
 
-        let resumeDataCopy = JSON.parse(resumeData);
+        let resumeDataCopy = JSON.parse(JSON.stringify(resumeData));
 
         if(image){
 
@@ -109,7 +109,7 @@ export const updateResume = async (req, res) => {
                resumeDataCopy.personal_info.image = response.url
         }
 
-        const resume = await Resume.findOneAndUpdate({userId, _id: resumeid}, resumeDataCopy, {new: true})
+        const resume = await Resume.findOneAndUpdate({userId, _id: resumeId}, resumeDataCopy, {new: true})
 
         return res.status(200).json({message: "Saved successfully", resume})
         

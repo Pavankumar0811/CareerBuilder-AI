@@ -1,8 +1,22 @@
 import React from 'react';
+import api from '../configs/apiClient';
+import { useDispatch } from 'react-redux';
+import { login } from '../app/features/authSlice';
+import toast from 'react-hot-toast';
+import { useSearchParams } from 'react-router-dom';
 
 const Login = () => {
+
+    const dispatch = useDispatch()
+    const [searchParams] = useSearchParams()
+    const initialState = searchParams.get('state') === 'register' ? 'register' : 'login'
    
-    const [state, setState] = React.useState("login")
+    const [state, setState] = React.useState(initialState)
+
+    React.useEffect(() => {
+        const nextState = searchParams.get('state') === 'register' ? 'register' : 'login'
+        setState(nextState)
+    }, [searchParams])
 
     const [formData, setFormData] = React.useState({
         name: '',
@@ -10,9 +24,16 @@ const Login = () => {
         password: ''
     })
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
-
+        try{
+           const {data} = await api.post(`/api/users/${state}`, formData)
+           dispatch(login(data))
+           localStorage.setItem("token", data.token)
+           toast.success(data.message)
+        }catch (error) {
+           toast(error?.response?.data?.message || error.message)
+        }
     }
 
     const handleChange = (e) => {

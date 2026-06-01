@@ -1,7 +1,10 @@
 import { Briefcase, Plus, Sparkles, Trash2 } from 'lucide-react';
-import React from 'react';
+import React, { useState } from 'react';
+import api from '../configs/apiClient';
+import toast from 'react-hot-toast';
 
-const ExperienceForm = ({data, onChange }) => {
+const ExperienceForm = ({data, onChange, token }) => {
+    const [enhancingIndex, setEnhancingIndex] = useState(null);
 
        const addExperience = () => {
         const newExperience = {
@@ -24,6 +27,31 @@ const ExperienceForm = ({data, onChange }) => {
               const updated = [...data];
               updated[index] = { ...updated[index], [field]: value };
               onChange(updated);
+          }
+
+          const enhanceWithAI = async (index) => {
+              const currentDescription = (data[index]?.description || '').trim();
+
+              if (!currentDescription) {
+                  toast.error('Add a job description first, then enhance it with AI.');
+                  return;
+              }
+
+              try {
+                  setEnhancingIndex(index);
+                  const { data: response } = await api.post(
+                      '/api/ai/enhance-job-desc',
+                      { userContent: currentDescription },
+                      { headers: { Authorization: token } }
+                  );
+
+                  updateExperience(index, 'description', response.enhancedContent || currentDescription);
+                  toast.success('Job description enhanced with AI');
+              } catch (error) {
+                  toast.error(error?.response?.data?.message || error.message);
+              } finally {
+                  setEnhancingIndex(null);
+              }
           }
 
 
@@ -77,9 +105,9 @@ const ExperienceForm = ({data, onChange }) => {
                             <div className='space-y-2'>
                               <div>
                                 <label className='text-sm font-medium text-gray-700'>Job description</label>
-                                <button className='flex items-center gap-1 px-2 py-1 text-xs bg-purple-200 transition-colors disabled:opacity-50'>
+                                <button type='button' onClick={() => enhanceWithAI(index)} disabled={enhancingIndex === index} className='flex items-center gap-1 px-2 py-1 text-xs bg-purple-200 transition-colors disabled:opacity-50'>
                                     <Sparkles className='w-3 h-3'/>
-                                    Enhance with AI
+                                    {enhancingIndex === index ? 'Enhancing...' : 'Enhance with AI'}
                                 </button>
                               </div>
                               <textarea value={experience.description || ""} onChange={(e)=> updateExperience(index, "description", e.target.value)} rows={4} className='w-full text-sm px-3 py-2 rounded-lg resize-none' placeholder='Describe your key responsibilities and achievements... '/>

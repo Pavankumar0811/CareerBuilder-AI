@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { Link, useParams } from 'react-router-dom';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
@@ -29,30 +30,47 @@ import PersonalInfoForm from '../components/PersonalInfoForm';
 import ResumePreview from '../components/ResumePreview';
 import TemplateSelector from '../components/TemplateSelector';
 import ProfessionalSummaryForm from '../components/ProfessionalSummaryForm';
+import api from '../configs/apiClient';
+import toast from 'react-hot-toast';
 
-const createResumeState = (resumeId) => {
-	const existingResume = dummyResumeData.find((item) => item._id === resumeId);
-
-	return (
-		existingResume ?? {
-			_id: '',
-			title: '',
-			personal_info: {},
-			professional_summary: '',
-			experience: [],
-			education: [],
-			skills: [],
-			project: [],
-			template: 'Classic',
-			accent_color: '#000000',
-			public: false,
-		}
-	);
-};
-
+// Helper: initial empty resume shape
+const emptyResume = () => ({
+	_id: '',
+	title: '',
+	personal_info: {},
+	professional_summary: '',
+	experience: [],
+	education: [],
+	skills: [],
+	project: [],
+	template: 'Classic',
+	accent_color: '#000000',
+	public: false,
+});
 const ResumeBuilder = () => {
 	const { resumeId } = useParams();
-	const [resumeData, setResumeData] = useState(() => createResumeState(resumeId));
+	const { token } = useSelector((state) => state.auth || {});
+
+	const [resumeData, setResumeData] = useState(() => {
+		const existing = dummyResumeData.find((item) => item._id === resumeId);
+		return existing ?? emptyResume();
+	});
+
+	useEffect(() => {
+		const loadExistingResume = async () => {
+			if (!resumeId) return;
+			try {
+				const { data } = await api.get(`/api/resumes/get/${resumeId}`, { headers: { Authorization: token } });
+				if (data?.resume) {
+					setResumeData(data.resume);
+					document.title = data.resume.title;
+				}
+			} catch (error) {
+				console.log(error?.message || error);
+			}
+		};
+		loadExistingResume();
+	}, [resumeId, token]);
 	const [activeSectionIndex, setActiveSectionIndex] = useState(0);
 	const [removeBackground, setRemoveBackground] = useState(false);
 	const [showShareModal, setShowShareModal] = useState(false);
@@ -67,11 +85,27 @@ const ResumeBuilder = () => {
 	];
 
 	const activeSection = section[activeSectionIndex];
+	const ActiveIcon = activeSection.icon;
 
 	useEffect(() => {
 		const resume = dummyResumeData.find((item) => item._id === resumeId);
 		document.title = resume?.title ?? 'Resume Builder';
 	}, [resumeId]);
+
+	const changeResumeVisibility = async () => {
+		try {
+			const fromData = new FormData();
+			fromData.append("resumeId", resumeId)
+			fromData.append("resumeData", JSON.stringify({public: !resumeData.public}))
+
+			const {data} = await api.put(`/api/resumes/update`, fromData, {headers: {Authorization}})
+
+			setResumeData({...resumeData, public: !resumeData.public})
+			toast.success(data.message)
+		} catch (error) {
+			console.error("Error saving resume:", error)
+		}
+	}
 
 	const downloadResumePDF = async () => {
 		try {
@@ -193,7 +227,7 @@ const ResumeBuilder = () => {
 							<div className='flex items-center justify-between gap-2'>
 								<div className='flex items-center gap-2 text-sm text-gray-800 font-semibold'>
 									<div className='p-2 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg'>
-										<activeSection.icon className='w-5 h-5 text-indigo-600' />
+										<ActiveIcon className='w-5 h-5 text-indigo-600' />
 									</div>
 									<span className='text-base font-semibold'>{activeSection.name}</span>
 								</div>
@@ -229,11 +263,11 @@ const ResumeBuilder = () => {
 								)}
 
 								{activeSection.id === 'summary' && (
-									<ProfessionalSummaryForm data={resumeData.professional_summary} onChange={(data) => setResumeData((prev) => ({ ...prev, professional_summary: data }))} setResumeData={setResumeData} />
+									<ProfessionalSummaryForm data={resumeData.professional_summary} onChange={(data) => setResumeData((prev) => ({ ...prev, professional_summary: data }))} token={token} />
 								)}
 
 								{activeSection.id === 'experience' && (
-									<ExperienceForm data={resumeData.experience} onChange={(data) => setResumeData((prev) => ({ ...prev, experience: data }))} />
+									<ExperienceForm data={resumeData.experience} onChange={(data) => setResumeData((prev) => ({ ...prev, experience: data }))} token={token} />
 								)}
 
 								{activeSection.id === 'education' && (

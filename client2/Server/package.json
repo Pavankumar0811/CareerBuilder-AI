@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "mongodb-memory-server": "^8.15.0",
+    "pdf-parse": "^1.1.1"
+  }
+}
